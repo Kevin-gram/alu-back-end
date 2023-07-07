@@ -1,27 +1,27 @@
 #!/usr/bin/python3
-"""
-python script that returns TODO list progress for a given employee ID
-"""
-import requests
-import json
+""" Library to gather data from an API """
 
+import requests
+import sys
+
+""" Function to gather data from an API """
 
 if __name__ == "__main__":
-    response = requests.get(f'https://jsonplaceholder.typicode.com/users/{employee_id}/todos')
+    employee_id = sys.argv[1]
+    url = "https://jsonplaceholder.typicode.com/users/{}".format(employee_id)
 
-    if response.status_code == 200:
-        todos = response.json()
+    todo = "https://jsonplaceholder.typicode.com/todos?userId={}"
+    todo = todo.format(employee_id)
 
-        completed_tasks = [todo for todo in todos if todo['completed']]
+    user_info = requests.request("GET", url).json()
+    todo_info = requests.request("GET", todo).json()
 
-        employee_name = todos[0]['username']
-        number_of_done_tasks = len(completed_tasks)
-        total_number_of_tasks = len(todos)
+    employee_name = user_info.get("name")
+    total_tasks = list(filter(lambda x: (x["completed"] is True), todo_info))
+    task_com = len(total_tasks)
+    total_task_done = len(todo_info)
 
-        print(f"Employee {employee_name} is done with tasks ({number_of_done_tasks}/{total_number_of_tasks}):")
+    print("Employee {} is done with tasks({}/{}):".format(employee_name,
+          task_com, total_task_done))
 
-        for task in completed_tasks:
-            print(f"\t{task['title']}")
-
-    else:
-        print(f"Failed to retrieve TODO list for employee {employee_id}.")
+    [print("\t {}".format(task.get("title"))) for task in total_tasks]
